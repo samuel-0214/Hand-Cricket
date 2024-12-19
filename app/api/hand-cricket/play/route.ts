@@ -8,8 +8,9 @@ export async function POST(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
   const sessionId = searchParams.get('sessionId');
   const playerMove = parseInt(searchParams.get('move') || '0');
-  // We'll prefix unused variable with underscore
-  const { account: _playerAccount } = await request.json();
+  
+  // Remove the unused account extraction
+  await request.json(); // We still need to consume the body
 
   if (!sessionId || !gameInstance.getGame(sessionId)) {
     return NextResponse.json(
@@ -30,6 +31,7 @@ export async function POST(request: NextRequest) {
   let message = '';
   let nextAction = null;
 
+  // Rest of your code remains the same...
   // Create transaction to record the move
   const transaction = new Transaction();
   transaction.add(
@@ -91,7 +93,7 @@ export async function POST(request: NextRequest) {
     nextAction = {
       type: "completed" as const,
       title: "Game Over!",
-      icon: "flash-tap logo.jpg",
+      icon: "https://flashtap.xyz/cricket-icon.svg",
       description: message,
       label: "Game Complete"
     };
