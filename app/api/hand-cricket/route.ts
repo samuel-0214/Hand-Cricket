@@ -43,7 +43,7 @@ export async function GET(request: NextRequest) {
   const metadata: ActionGetResponse = {
     type: "action" as const,
     title: "Flashtap Hand Cricket",
-    icon: "https://hand-cricket-mauve.vercel.app/cricket-icon.svg",
+    icon: "flash-tap logo.jpg",
     description,
     label: gameState.gamePhase.includes('batting') ? "Bat" : "Bowl",
     links: {

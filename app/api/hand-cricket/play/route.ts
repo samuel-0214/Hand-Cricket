@@ -9,8 +9,7 @@ export async function POST(request: NextRequest) {
   const sessionId = searchParams.get('sessionId');
   const playerMove = parseInt(searchParams.get('move') || '0');
   
-  // Remove the unused account extraction
-  await request.json(); // We still need to consume the body
+  await request.json(); // Consume the body
 
   if (!sessionId || !gameInstance.getGame(sessionId)) {
     return NextResponse.json(
@@ -29,9 +28,7 @@ export async function POST(request: NextRequest) {
   const gameState = gameInstance.getGame(sessionId)!;
   const computerMove = gameInstance.getComputerMove();
   let message = '';
-  let nextAction = null;
 
-  // Rest of your code remains the same...
   // Create transaction to record the move
   const transaction = new Transaction();
   transaction.add(
@@ -89,26 +86,15 @@ export async function POST(request: NextRequest) {
 
   gameInstance.updateGame(sessionId, gameState);
 
-  if (gameState.gamePhase === 'completed') {
-    nextAction = {
-      type: "completed" as const,
-      title: "Game Over!",
-      icon: "https://flashtap.xyz/cricket-icon.svg",
-      description: message,
-      label: "Game Complete"
-    };
-    gameInstance.endGame(sessionId);
-  }
-
-  const response = NextResponse.json({
+  const response: ActionPostResponse = {
     type: "transaction",
     transaction: Buffer.from(transaction.serialize()).toString('base64'),
-    message,
-    ...(nextAction && { links: { next: { type: "inline", action: nextAction } } })
-  } as ActionPostResponse);
+    message
+  };
 
-  response.headers.set('X-Action-Version', '1');
-  response.headers.set('X-Blockchain-Ids', 'solana-devnet');
+  const nextResponse = NextResponse.json(response);
+  nextResponse.headers.set('X-Action-Version', '1');
+  nextResponse.headers.set('X-Blockchain-Ids', 'solana-devnet');
 
-  return response;
+  return nextResponse;
 }
