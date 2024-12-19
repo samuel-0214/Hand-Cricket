@@ -1,25 +1,24 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { gameInstance } from '@/app/lib/game';
 import { Transaction } from '@solana/web3.js';
 import { createMemoInstruction } from '@solana/spl-memo';
 import { ActionPostResponse } from '@solana/actions';
+import { gameInstance } from '@/app/lib/game';
 
-export async function POST(request: NextRequest) {
-  const searchParams = request.nextUrl.searchParams;
-  const sessionId = searchParams.get('sessionId');
-  const playerMove = parseInt(searchParams.get('move') || '0');
+export async function POST(request: Request) {
+  const url = new URL(request.url);
+  const sessionId = url.searchParams.get('sessionId');
+  const playerMove = parseInt(url.searchParams.get('move') || '0');
   
   await request.json(); // Consume the body
 
   if (!sessionId || !gameInstance.getGame(sessionId)) {
-    return NextResponse.json(
+    return Response.json(
       { error: { message: 'Invalid or expired game session.' } },
       { status: 400 }
     );
   }
 
   if (!playerMove || playerMove < 1 || playerMove > 6) {
-    return NextResponse.json(
+    return Response.json(
       { error: { message: 'Invalid move. Please choose a number between 1 and 6.' } },
       { status: 400 }
     );
@@ -28,6 +27,7 @@ export async function POST(request: NextRequest) {
   const gameState = gameInstance.getGame(sessionId)!;
   const computerMove = gameInstance.getComputerMove();
   let message = '';
+  let nextAction = null;
 
   // Create transaction to record the move
   const transaction = new Transaction();
@@ -83,18 +83,35 @@ export async function POST(request: NextRequest) {
       }
       break;
   }
-
+  // Game logic remains the same
   gameInstance.updateGame(sessionId, gameState);
 
-  const response: ActionPostResponse = {
+  if (gameState.gamePhase === 'completed') {
+    nextAction = {
+      type: "completed" as const,
+      title: "Game Over!",
+      icon: "https://flashtap.xyz/cricket-icon.svg",
+      description: message,
+      label: "Game Complete"
+    };
+    gameInstance.endGame(sessionId);
+  }
+
+  const responseBody: ActionPostResponse = {
     type: "transaction",
     transaction: Buffer.from(transaction.serialize()).toString('base64'),
-    message
+    message,
+    ...(nextAction && { links: { next: { type: "inline", action: nextAction } } })
   };
 
-  const nextResponse = NextResponse.json(response);
-  nextResponse.headers.set('X-Action-Version', '1');
-  nextResponse.headers.set('X-Blockchain-Ids', 'solana-devnet');
+  const headers = {
+    'Content-Type': 'application/json',
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Methods': 'GET,POST,PUT,OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization, Content-Encoding, Accept-Encoding, X-Action-Version, X-Blockchain-Ids',
+    'X-Action-Version': '1',
+    'X-Blockchain-Ids': 'solana-devnet'
+  };
 
-  return nextResponse;
+  return Response.json(responseBody, { headers });
 }
