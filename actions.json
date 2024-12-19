@@ -1,0 +1,8 @@
+{
+    "rules": [
+      {
+        "pathPattern": "/api/hand-cricket/**",
+        "apiPath": "/api/hand-cricket/**"
+      }
+    ]
+  }
