@@ -8,8 +8,8 @@ export async function POST(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
   const sessionId = searchParams.get('sessionId');
   const playerMove = parseInt(searchParams.get('move') || '0');
-  const body = await request.json();
-  const playerAccount = body.account;
+  // We'll prefix unused variable with underscore
+  const { account: _playerAccount } = await request.json();
 
   if (!sessionId || !gameInstance.getGame(sessionId)) {
     return NextResponse.json(
@@ -91,7 +91,7 @@ export async function POST(request: NextRequest) {
     nextAction = {
       type: "completed" as const,
       title: "Game Over!",
-      icon: "https://flashtap.xyz/cricket-icon.svg",
+      icon: "flash-tap logo.jpg",
       description: message,
       label: "Game Complete"
     };
@@ -99,7 +99,7 @@ export async function POST(request: NextRequest) {
   }
 
   const response: ActionPostResponse = {
-    type: "transaction", // Add this line
+    type: "transaction",
     transaction: Buffer.from(transaction.serialize()).toString('base64'),
     message,
     ...(nextAction && { links: { next: { type: "inline", action: nextAction } } })
