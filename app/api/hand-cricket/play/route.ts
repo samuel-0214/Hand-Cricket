@@ -114,15 +114,5 @@ export async function POST(request: Request) {
   };
   
 
-  return Response.json(responseBody, { 
-    status: 200, // Add explicit status code
-    headers: {
-      'Content-Type': 'application/json',
-      'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Methods': 'GET,POST,PUT,OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type, Authorization, Content-Encoding, Accept-Encoding, X-Action-Version, X-Blockchain-Ids',
-      'X-Action-Version': '1',
-      'X-Blockchain-Ids': 'solana-devnet'
-    }
-  });
+  return Response.json(responseBody, {status: 200, headers });
 }
