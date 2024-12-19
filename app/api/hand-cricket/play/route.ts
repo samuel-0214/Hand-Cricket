@@ -100,12 +100,15 @@ export async function POST(request: NextRequest) {
     gameInstance.endGame(sessionId);
   }
 
-  const response: ActionPostResponse = {
+  const response = NextResponse.json({
     type: "transaction",
     transaction: Buffer.from(transaction.serialize()).toString('base64'),
     message,
     ...(nextAction && { links: { next: { type: "inline", action: nextAction } } })
-  };
+  } as ActionPostResponse);
 
-  return NextResponse.json(response);
+  response.headers.set('X-Action-Version', '1');
+  response.headers.set('X-Blockchain-Ids', 'solana-devnet');
+
+  return response;
 }

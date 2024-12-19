@@ -43,17 +43,21 @@ export async function GET(request: NextRequest) {
   const metadata: ActionGetResponse = {
     type: "action" as const,
     title: "Flashtap Hand Cricket",
-    icon: "flash-rap logo.jpg",
+    icon: "https://hand-cricket-mauve.vercel.app/cricket-icon.svg",
     description,
     label: gameState.gamePhase.includes('batting') ? "Bat" : "Bowl",
     links: {
       actions: Array.from({ length: 6 }, (_, i) => ({
-        type: "transaction" as const,  // Added this line
+        type: "transaction" as const,
         label: `Play ${i + 1}`,
         href: `/api/hand-cricket/play?sessionId=${sessionId}&move=${i + 1}`,
       }))
     }
   };
 
-  return NextResponse.json(metadata);
+  const response = NextResponse.json(metadata);
+  response.headers.set('X-Action-Version', '1');
+  response.headers.set('X-Blockchain-Ids', 'solana-devnet');
+  
+  return response;
 }
